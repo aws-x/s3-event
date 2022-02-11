@@ -1,33 +1,22 @@
-# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
-# For full config options, check the docs:
-#    docs.serverless.com
-#
-# Happy Coding!
-
-service: s3-event
+service: s3-trigger-lambda
 # app and org for use with dashboard.serverless.com
 #app: your-app-name
 #org: your-org-name
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
-frameworkVersion: '2'
+frameworkVersion: "2"
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs14.x
   lambdaHashingVersion: 20201221
 
-# you can overwrite defaults here
-#  stage: dev
-#  region: us-east-1
+  stage: dev
+  region: us-east-1
+
+environment:
+  s3: ${self:custom.s3}
 
 # you can add statements to the Lambda function's IAM Role here
 #  iam:
@@ -59,18 +48,21 @@ provider:
 #    - include-me.js
 #    - include-me-dir/**
 
+custom:
+  s3: ${self:service}-bucket-${self:provider.stage}
+
 functions:
-  hello:
-    handler: handler.hello
-#    The following are a few example events you can configure
-#    NOTE: Please make sure to change your handler code to work with those events
-#    Check the event documentation for details
-#    events:
-#      - httpApi:
-#          path: /users/create
-#          method: get
-#      - websocket: $connect
-#      - s3: ${env:BUCKET}
+  sync:
+    handler: functions/sync.handler
+    timeout: 900
+    events:
+      - s3:
+          bucket: ${self:custom.s3}
+          event: s3:ObjectCreated:*
+          existing: true
+      #     rules:
+      #       - prefix: receive/
+      #       - suffix: .csv
 #      - schedule: rate(10 minutes)
 #      - sns: greeter-topic
 #      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
@@ -103,12 +95,12 @@ functions:
 #      variable2: value2
 
 # you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
+resources:
+  Resources:
+    NewResource:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.s3}
 #  Outputs:
 #     NewOutput:
 #       Description: "Description for the output"
