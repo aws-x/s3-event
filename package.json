@@ -9,7 +9,6 @@
         "info:dev": "sls info --aws-profile antonio --stage dev",
         "deploy:dev": "sls deploy --aws-profile antonio --stage dev",
         "s3:cp": "aws s3 cp /tmp/ART_20220210_1300_16779-antonio.ASC s3://s3-trigger-lambda-bucket-dev/ --acl public-read --profile antonio",
-        "test": "sls invoke local -f sync -p tests/s3-create.json"
     },
     "devDependencies": {
         "aws-sdk": "^2.1073.0"
